@@ -11,24 +11,49 @@ export class IssuesService {
     @InjectRepository(Issue)
     private issueRepository: Repository<Issue>,
   ) {}
-  create(createIssueDto: CreateIssueDto) {
-    const newIssue = this.issueRepository.create(createIssueDto);
-    return this.issueRepository.save(newIssue);
+  async create(createIssueDto: CreateIssueDto) {
+    let newIssue = this.issueRepository.create(createIssueDto);
+    newIssue = await this.issueRepository.save(newIssue);
+    console.log(newIssue)
+    return newIssue
   }
 
   findAll() {
-    return `This action returns all issues`;
+    return this.issueRepository.find();
   }
 
   findOne(id: number) {
-    return `This action returns a #${id} issue`;
+    return this.issueRepository.findOneBy({id});
   }
 
-  update(id: number, updateIssueDto: UpdateIssueDto) {
-    return `This action updates a #${id} issue`;
+  async update(id: number, updateIssueDto: UpdateIssueDto) {
+    const toUpdate = await this.issueRepository.findOneBy({id});
+
+    let message = ""
+    if(toUpdate) {
+      await Object.assign(toUpdate, updateIssueDto)
+      await this.issueRepository.save(toUpdate)
+      message = `Updating issue with id: ${id}`
+    } else {
+      message = "Nothing to update"
+    }
+
+    console.log(message)
+    return message;
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} issue`;
+  async remove(id: number) {
+    const toRemove = await this.issueRepository.findOneBy({id});
+
+    let message = ""
+    if(toRemove) {
+      await this.issueRepository.remove(toRemove);
+      message = `Deleting issue with id: ${id}`
+    } else {
+      message = "Nothing to delete"
+    }
+
+    console.log(message)
+    return message;
   }
 }
